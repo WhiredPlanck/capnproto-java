@@ -87,6 +87,27 @@
             </execution>
 
             <execution>
+                <id>generate-meta-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                    <target>
+                        <mkdir dir="src/main/generated/org/capnproto"/>
+                        <exec executable="capnp" failonerror="true">
+                            <arg value="compile"/>
+                            <arg value="-I" />
+                            <arg value="src/main/schema/" />
+                            <arg value="--src-prefix=src/main/schema" />
+                            <arg value="-o../capnpc-java:src/main/generated/org/capnproto" />
+                            <arg value="src/main/schema/schema.capnp" />
+                        </exec>
+                    </target>
+                </configuration>
+                <goals>
+                    <goal>run</goal>
+                </goals>
+            </execution>
+
+            <execution>
               <id>generate-test-sources</id>
               <phase>generate-test-sources</phase>
               <configuration>
@@ -115,6 +136,19 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>3.1.0</version>
           <executions>
+            <execution>
+              <id>add-generated-meta-sources</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>add-source</goal>
+              </goals>
+                <configuration>
+                  <sources>
+                    <source>src/main/generated</source>
+                  </sources>
+                </configuration>
+            </execution>
+
             <execution>
               <id>add-generated-test-sources</id>
               <phase>generate-test-sources</phase>
