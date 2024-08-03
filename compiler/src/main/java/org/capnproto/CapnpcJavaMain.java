@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class CapnpcJavaMain {
     public static void main(String[] args) throws IOException {
@@ -16,16 +15,12 @@ public class CapnpcJavaMain {
             final MessageReader reader = Serialize.read(channel);
             final Schema.CodeGeneratorRequest.Reader request = reader.getRoot(Schema.CodeGeneratorRequest.factory);
 
-            final HashMap<Long, Schema.Node.Reader> nodeMaps = new HashMap<>();
-
-            for (final Schema.Node.Reader node : request.getNodes()) {
-                nodeMaps.put(node.getId(), node);
-            }
+            final GeneratorContext ctx = GeneratorContext.newFromMessage(reader).get();
 
             for (final Schema.CodeGeneratorRequest.RequestedFile.Reader requestedFile : request.getRequestedFiles()) {
-                final Schema.Node.Reader node = nodeMaps.get(requestedFile.getId());
+                final long id = requestedFile.getId();
 
-                final JavaFile file = Generator.makeJavaFile(node);
+                final JavaFile file = Generator.makeJavaFile(ctx, id);
                 try (final BufferedWriter writer = Files.newBufferedWriter(Paths.get(file.typeSpec.name + ".java"))) {
                     file.writeTo(writer);
                 }
