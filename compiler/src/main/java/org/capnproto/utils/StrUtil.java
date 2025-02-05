@@ -46,6 +46,26 @@ public class StrUtil {
         }
     }
 
+    public static String toSnakeCase(final CharSequence s, boolean upper) {
+        Objects.requireNonNull(s);
+        final var builder = new StringBuilder();
+        boolean firstChar = true;
+        final int length = s.length();
+        for (int i = 0; i < length; i++) {
+            final char ch = s.charAt(i);
+            if (Character.isUpperCase(ch) && !firstChar) {
+                builder.append('_');
+            }
+            if (upper) {
+                builder.append(Character.toUpperCase(ch));
+            } else {
+                builder.append(Character.toLowerCase(ch));
+            }
+            firstChar = false;
+        }
+        return builder.toString();
+    }
+
     public static String subBeforeLast(final String s, final String delimiter, final String missingDefaultValue) {
         Objects.requireNonNull(s);
         final int i = s.lastIndexOf(delimiter);

@@ -1,10 +1,12 @@
 package org.capnproto;
 
+import org.capnproto.utils.CollectionUtil;
 import org.capnproto.utils.StrUtil;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GeneratorContext {
     public final Schema.CodeGeneratorRequest.Reader request;
@@ -95,6 +97,10 @@ public class GeneratorContext {
         return Optional.of(ctx);
     }
 
+    public String getLastName(final long id) {
+        return CollectionUtil.last(scopeMap.get(id));
+    }
+
     private void populateScopeMap(final List<String> scopeNames, final long nodeId) {
         scopeMap.put(nodeId, scopeNames);
 
@@ -129,5 +135,34 @@ public class GeneratorContext {
             }
         }
 
+    }
+
+    public List<String> getTypeParameters(final long nodeId) {
+        long currentNodeId = nodeId;
+        final ArrayList<List<String>> accumulator = new ArrayList<>();
+
+        boolean run = true;
+        while (run) {
+            final Schema.Node.Reader currentNode = nodeMap.get(currentNodeId);
+            if (currentNode != null) {
+                final List<String> params = new ArrayList<>();
+                for (final var parameter : currentNode.getParameters()) {
+                    params.add(parameter.getName().toString());
+                }
+                accumulator.add(params);
+
+                final long parentScopeId = nodeParents.get(currentNodeId);
+                if (parentScopeId == 0) {
+                    break;
+                } else {
+                    currentNodeId = parentScopeId;
+                }
+            } else {
+                run = false;
+            }
+        }
+
+        Collections.reverse(accumulator);
+        return accumulator.stream().flatMap(List::stream).collect(Collectors.toList());
     }
 }
